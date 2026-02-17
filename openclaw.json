@@ -1,0 +1,137 @@
+{
+  "auth": {
+    "profiles": {
+      "anthropic:local": {
+        "provider": "anthropic",
+        "mode": "token"
+      }
+    }
+  },
+  "agents": {
+    "defaults": {
+      "model": {
+        "primary": "anthropic/claude-opus-4-6"
+      },
+      "models": {
+        "anthropic/claude-opus-4-6": {
+          "alias": "opus",
+          "params": {
+            "cacheRetention": "long"
+          }
+        },
+        "anthropic/claude-sonnet-4-5": {
+          "alias": "sonnet"
+        },
+        "anthropic/claude-haiku-4-5": {
+          "alias": "haiku"
+        }
+      },
+      "workspace": "/Users/nicodelgadob/.openclaw/workspace",
+      "maxConcurrent": 8,
+      "subagents": {
+        "maxConcurrent": 8
+      }
+    },
+    "list": [
+      {
+        "id": "main",
+        "model": "anthropic/claude-opus-4-6",
+        "identity": {
+          "name": "meta"
+        }
+      },
+      {
+        "id": "nickgpt",
+        "name": "nickgpt",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/nickgpt",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/nickgpt/agent",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      {
+        "id": "optimus",
+        "name": "optimus",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/optimus",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/optimus/agent",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      {
+        "id": "clawdevoted",
+        "name": "clawdevoted",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/clawdevoted",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/clawdevoted/agent",
+        "model": "anthropic/claude-opus-4-6"
+      },
+      {
+        "id": "nickgpt-whatsapp",
+        "name": "nickgpt-whatsapp",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/nickgpt-whatsapp",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/nickgpt-whatsapp/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "nickgpt-email",
+        "name": "nickgpt-email",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/nickgpt-email",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/nickgpt-email/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "nickgpt-finanzas",
+        "name": "nickgpt-finanzas",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/nickgpt-finanzas",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/nickgpt-finanzas/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "nickgpt-calendario",
+        "name": "nickgpt-calendario",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/nickgpt-calendario",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/nickgpt-calendario/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "nickgpt-redes",
+        "name": "nickgpt-redes",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/nickgpt-redes",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/nickgpt-redes/agent",
+        "model": "anthropic/claude-haiku-4-5"
+      },
+      {
+        "id": "nickgpt-salud",
+        "name": "nickgpt-salud",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/nickgpt-salud",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/nickgpt-salud/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "nickgpt-love",
+        "name": "nickgpt-love",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/nickgpt-love",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/nickgpt-love/agent",
+        "model": "anthropic/claude-haiku-4-5"
+      },
+      {
+        "id": "clawdevoted-research",
+        "name": "clawdevoted-research",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/clawdevoted-research",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/clawdevoted-research/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "optimus-dev-backend",
+        "name": "optimus-dev-backend",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/optimus-dev-backend",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/optimus-dev-backend/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      },
+      {
+        "id": "optimus-dev-frontend",
+        "name": "optimus-dev-frontend",
+        "workspace": "/Users/nicodelgadob/.openclaw/workspace/optimus-dev-frontend",
+        "agentDir": "/Users/nicodelgadob/.openclaw/agents/optimus-dev-frontend/agent",
+        "model": "anthropic/claude-sonnet-4-5"
+      }
+    ]
+  }
+}
+
