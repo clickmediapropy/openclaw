@@ -241,9 +241,12 @@
       {
         "id": "optimus-dev-backend",
         "name": "optimus-dev-backend",
-        "workspace": "/Users/nicodelgadob/.openclaw/workspace/optimus-dev-backend",
+        "workspace": "/Users/nicodelgadob/repos/cmp",
         "agentDir": "/Users/nicodelgadob/.openclaw/agents/optimus-dev-backend/agent",
         "model": "anthropic/claude-sonnet-4-5",
+        "sandbox": {
+          "workspaceRoot": "/Users/nicodelgadob/repos/cmp"
+        },
         "subagents": {
           "allowAgents": []
         },
@@ -268,9 +271,12 @@
       {
         "id": "optimus-dev-frontend",
         "name": "optimus-dev-frontend",
-        "workspace": "/Users/nicodelgadob/.openclaw/workspace/optimus-dev-frontend",
+        "workspace": "/Users/nicodelgadob/repos/cmp",
         "agentDir": "/Users/nicodelgadob/.openclaw/agents/optimus-dev-frontend/agent",
         "model": "anthropic/claude-sonnet-4-5",
+        "sandbox": {
+          "workspaceRoot": "/Users/nicodelgadob/repos/cmp"
+        },
         "subagents": {
           "allowAgents": []
         },
