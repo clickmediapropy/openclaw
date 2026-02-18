@@ -52,8 +52,14 @@
             "sessions_history",
             "sessions_send",
             "sessions_spawn",
-            "session_status"
-          ]
+            "session_status",
+            "exec"
+          ],
+          "exec": {
+            "security": "allowlist",
+            "ask": "on-miss",
+            "safeBins": ["openclaw"]
+          }
         }
       },
       {
@@ -67,10 +73,10 @@
             "nickgpt-whatsapp",
             "nickgpt-email",
             "nickgpt-finanzas",
-            "nickgpt-calendario",
             "nickgpt-redes",
             "nickgpt-salud",
-            "nickgpt-love"
+            "nickgpt-love",
+            "nickgpt-calendario"
           ]
         },
         "tools": {
@@ -92,11 +98,7 @@
         "agentDir": "/Users/nicodelgadob/.openclaw/agents/optimus/agent",
         "model": "anthropic/claude-opus-4-6",
         "subagents": {
-          "allowAgents": [
-            "optimus-dev-backend",
-            "optimus-dev-frontend",
-            "nickgpt-calendario"
-          ]
+          "allowAgents": ["optimus-dev-backend", "optimus-dev-frontend", "nickgpt-calendario"]
         },
         "tools": {
           "allow": [
@@ -117,10 +119,7 @@
         "agentDir": "/Users/nicodelgadob/.openclaw/agents/clawdevoted/agent",
         "model": "anthropic/claude-opus-4-6",
         "subagents": {
-          "allowAgents": [
-            "clawdevoted-research",
-            "nickgpt-calendario"
-          ]
+          "allowAgents": ["clawdevoted-research", "nickgpt-calendario"]
         },
         "tools": {
           "allow": [
@@ -251,11 +250,7 @@
           "allowAgents": []
         },
         "tools": {
-          "allow": [
-            "group:fs",
-            "group:runtime",
-            "image"
-          ],
+          "allow": ["group:fs", "group:runtime", "image"],
           "deny": [
             "group:messaging",
             "group:sessions",
@@ -281,11 +276,7 @@
           "allowAgents": []
         },
         "tools": {
-          "allow": [
-            "group:fs",
-            "group:runtime",
-            "image"
-          ],
+          "allow": ["group:fs", "group:runtime", "image"],
           "deny": [
             "group:messaging",
             "group:sessions",
