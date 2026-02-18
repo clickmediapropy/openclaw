@@ -29,7 +29,8 @@
       "workspace": "/Users/nicodelgadob/.openclaw/workspace",
       "maxConcurrent": 8,
       "subagents": {
-        "maxConcurrent": 8
+        "maxConcurrent": 8,
+        "maxSpawnDepth": 2
       },
       "typingMode": "instant"
     },
@@ -306,18 +307,24 @@
   },
   "bindings": [
     {
-      "channel": "whatsapp",
-      "accountId": "personal",
-      "agentId": "nickgpt-whatsapp"
+      "agentId": "nickgpt-whatsapp",
+      "match": {
+        "channel": "whatsapp",
+        "accountId": "personal"
+      }
     },
     {
-      "channel": "whatsapp",
-      "accountId": "meta-bot",
-      "agentId": "main"
+      "agentId": "main",
+      "match": {
+        "channel": "whatsapp",
+        "accountId": "meta-bot"
+      }
     },
     {
-      "channel": "whatsapp",
-      "agentId": "main"
+      "agentId": "main",
+      "match": {
+        "channel": "whatsapp"
+      }
     }
   ]
 }
