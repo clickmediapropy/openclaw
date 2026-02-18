@@ -298,16 +298,23 @@
       "streamMode": "partial",
       "blockStreaming": false,
       "accounts": {
-        "nickgpt": { "name": "NickGPT" },
-        "optimus": { "name": "Optimus" },
-        "meta": { "name": "MetaClaw" },
-        "clawdevoted": { "name": "DevotedClaw" }
+        "nickgpt": {
+          "name": "NickGPT"
+        },
+        "optimus": {
+          "name": "Optimus"
+        },
+        "meta": {
+          "name": "MetaClaw"
+        },
+        "clawdevoted": {
+          "name": "DevotedClaw"
+        }
       }
     },
     "whatsapp": {
       "accounts": {
-        "personal": {},
-        "meta-bot": {}
+        "personal": {}
       }
     }
   },
@@ -345,13 +352,6 @@
       "match": {
         "channel": "whatsapp",
         "accountId": "personal"
-      }
-    },
-    {
-      "agentId": "main",
-      "match": {
-        "channel": "whatsapp",
-        "accountId": "meta-bot"
       }
     },
     {
