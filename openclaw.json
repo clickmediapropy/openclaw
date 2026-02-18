@@ -296,7 +296,13 @@
   "channels": {
     "telegram": {
       "streamMode": "partial",
-      "blockStreaming": false
+      "blockStreaming": false,
+      "accounts": {
+        "nickgpt": { "name": "NickGPT" },
+        "optimus": { "name": "Optimus" },
+        "meta": { "name": "MetaClaw" },
+        "clawdevoted": { "name": "DevotedClaw" }
+      }
     },
     "whatsapp": {
       "accounts": {
@@ -306,6 +312,34 @@
     }
   },
   "bindings": [
+    {
+      "agentId": "nickgpt",
+      "match": {
+        "channel": "telegram",
+        "accountId": "nickgpt"
+      }
+    },
+    {
+      "agentId": "optimus",
+      "match": {
+        "channel": "telegram",
+        "accountId": "optimus"
+      }
+    },
+    {
+      "agentId": "main",
+      "match": {
+        "channel": "telegram",
+        "accountId": "meta"
+      }
+    },
+    {
+      "agentId": "clawdevoted",
+      "match": {
+        "channel": "telegram",
+        "accountId": "clawdevoted"
+      }
+    },
     {
       "agentId": "nickgpt-whatsapp",
       "match": {
