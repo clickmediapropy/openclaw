@@ -30,7 +30,8 @@
       "maxConcurrent": 8,
       "subagents": {
         "maxConcurrent": 8
-      }
+      },
+      "typingMode": "instant"
     },
     "list": [
       {
@@ -290,5 +291,33 @@
         }
       }
     ]
-  }
+  },
+  "channels": {
+    "telegram": {
+      "streamMode": "partial",
+      "blockStreaming": false
+    },
+    "whatsapp": {
+      "accounts": {
+        "personal": {},
+        "meta-bot": {}
+      }
+    }
+  },
+  "bindings": [
+    {
+      "channel": "whatsapp",
+      "accountId": "personal",
+      "agentId": "nickgpt-whatsapp"
+    },
+    {
+      "channel": "whatsapp",
+      "accountId": "meta-bot",
+      "agentId": "main"
+    },
+    {
+      "channel": "whatsapp",
+      "agentId": "main"
+    }
+  ]
 }
