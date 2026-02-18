@@ -57,7 +57,7 @@
           ],
           "exec": {
             "security": "allowlist",
-            "ask": "on-miss",
+            "ask": "always",
             "safeBins": ["openclaw"]
           }
         }
