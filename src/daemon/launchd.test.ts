@@ -160,6 +160,10 @@ describe("launchd install", () => {
     expect(enableIndex).toBeGreaterThanOrEqual(0);
     expect(bootstrapIndex).toBeGreaterThanOrEqual(0);
     expect(enableIndex).toBeLessThan(bootstrapIndex);
+
+    const plist = state.files.get(plistPath) ?? "";
+    expect(plist).toMatch(/<key>KeepAlive<\/key>\s*<dict>/i);
+    expect(plist).toMatch(/<key>NetworkState<\/key>\s*<true\s*\/>/i);
   });
 
   it("writes TMPDIR to LaunchAgent environment when provided", async () => {

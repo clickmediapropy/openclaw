@@ -441,7 +441,9 @@ export async function resolveMedia(
   }
   const fetchImpl = proxyFetch ?? globalThis.fetch;
   if (!fetchImpl) {
-    throw new Error("fetch is not available; set channels.telegram.proxy in config");
+    throw new Error(
+      "fetch is not available; set channels.telegram.proxy or OPENCLAW_TELEGRAM_PROXY",
+    );
   }
   const saved = await downloadAndSaveTelegramFile(file.file_path, fetchImpl);
   const placeholder = resolveTelegramMediaPlaceholder(msg) ?? "<media:document>";

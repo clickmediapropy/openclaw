@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resolveFetch } from "../infra/fetch.js";
-import { resetTelegramFetchStateForTests, resolveTelegramFetch } from "./fetch.js";
+import {
+  resetTelegramFetchStateForTests,
+  resolveTelegramFetch,
+  resolveTelegramProxyUrl,
+} from "./fetch.js";
 
 const setDefaultAutoSelectFamily = vi.hoisted(() => vi.fn());
 const setDefaultResultOrder = vi.hoisted(() => vi.fn());
@@ -132,5 +136,28 @@ describe("resolveTelegramFetch", () => {
     resolveTelegramFetch(undefined, { network: { dnsResultOrder: "ipv4first" } });
 
     expect(setDefaultResultOrder).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe("resolveTelegramProxyUrl", () => {
+  it("prefers explicit config proxy over env", () => {
+    const resolved = resolveTelegramProxyUrl("http://config.proxy:8080", {
+      OPENCLAW_TELEGRAM_PROXY: "http://env.proxy:8080",
+    });
+    expect(resolved).toBe("http://config.proxy:8080");
+  });
+
+  it("falls back to OPENCLAW_TELEGRAM_PROXY", () => {
+    const resolved = resolveTelegramProxyUrl(undefined, {
+      OPENCLAW_TELEGRAM_PROXY: "http://env.proxy:8080",
+    });
+    expect(resolved).toBe("http://env.proxy:8080");
+  });
+
+  it("falls back to HTTPS_PROXY when Telegram-specific env is missing", () => {
+    const resolved = resolveTelegramProxyUrl(undefined, {
+      HTTPS_PROXY: "http://https.proxy:8080",
+    });
+    expect(resolved).toBe("http://https.proxy:8080");
   });
 });

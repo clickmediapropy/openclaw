@@ -59,9 +59,12 @@ History backfill
 
 Send
 
-- Text: `wacli send text --to "+14155551212" --message "Hello! Are you free at 3pm?"`
-- Group: `wacli send text --to "1234567890-123456789@g.us" --message "Running 5 min late."`
-- File: `wacli send file --to "+14155551212" --file /path/agenda.pdf --caption "Agenda"`
+**Always use `wacli-send` (not `wacli send`) for all send operations.**
+`wacli-send` is a wrapper at `/opt/homebrew/bin/wacli-send` that safely stops `wacli sync --follow` before sending (avoids application-level lock conflicts), then restarts sync automatically.
+
+- Text: `wacli-send text --to "+14155551212" --message "Hello! Are you free at 3pm?"`
+- Group: `wacli-send text --to "1234567890-123456789@g.us" --message "Running 5 min late."`
+- File: `wacli-send file --to "+14155551212" --file /path/agenda.pdf --caption "Agenda"`
 
 Notes
 

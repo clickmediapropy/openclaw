@@ -39,7 +39,7 @@ import {
   resolveTelegramForumThreadId,
   resolveTelegramStreamMode,
 } from "./bot/helpers.js";
-import { resolveTelegramFetch } from "./fetch.js";
+import { resolveTelegramFetch, resolveTelegramProxyFetch } from "./fetch.js";
 
 export type TelegramBotOptions = {
   token: string;
@@ -121,7 +121,8 @@ export function createTelegramBot(opts: TelegramBotOptions) {
   });
   const telegramCfg = account.config;
 
-  const fetchImpl = resolveTelegramFetch(opts.proxyFetch, {
+  const proxyFetch = opts.proxyFetch ?? resolveTelegramProxyFetch(telegramCfg.proxy);
+  const fetchImpl = resolveTelegramFetch(proxyFetch, {
     network: telegramCfg.network,
   }) as unknown as ApiClientOptions["fetch"];
   const shouldProvideFetch = Boolean(fetchImpl);

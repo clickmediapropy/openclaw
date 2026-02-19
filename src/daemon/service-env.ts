@@ -232,6 +232,16 @@ export function buildServiceEnvironment(params: {
     OPENCLAW_SERVICE_MARKER: GATEWAY_SERVICE_MARKER,
     OPENCLAW_SERVICE_KIND: GATEWAY_SERVICE_KIND,
     OPENCLAW_SERVICE_VERSION: VERSION,
+    OPENCLAW_TELEGRAM_PROXY: env.OPENCLAW_TELEGRAM_PROXY,
+    TELEGRAM_PROXY: env.TELEGRAM_PROXY,
+    HTTPS_PROXY: env.HTTPS_PROXY,
+    https_proxy: env.https_proxy,
+    HTTP_PROXY: env.HTTP_PROXY,
+    http_proxy: env.http_proxy,
+    ALL_PROXY: env.ALL_PROXY,
+    all_proxy: env.all_proxy,
+    NO_PROXY: env.NO_PROXY,
+    no_proxy: env.no_proxy,
   };
 }
 

@@ -7,10 +7,21 @@ import {
   resolveTelegramAutoSelectFamilyDecision,
   resolveTelegramDnsResultOrderDecision,
 } from "./network-config.js";
+import { makeProxyFetch } from "./proxy.js";
 
 let appliedAutoSelectFamily: boolean | null = null;
 let appliedDnsResultOrder: string | null = null;
 const log = createSubsystemLogger("telegram/network");
+const TELEGRAM_PROXY_ENV_KEYS = [
+  "OPENCLAW_TELEGRAM_PROXY",
+  "TELEGRAM_PROXY",
+  "HTTPS_PROXY",
+  "https_proxy",
+  "HTTP_PROXY",
+  "http_proxy",
+  "ALL_PROXY",
+  "all_proxy",
+] as const;
 
 // Node 22 workaround: enable autoSelectFamily to allow IPv4 fallback on broken IPv6 networks.
 // Many networks have IPv6 configured but not routed, causing "Network is unreachable" errors.
@@ -60,9 +71,44 @@ export function resolveTelegramFetch(
   }
   const fetchImpl = resolveFetch();
   if (!fetchImpl) {
-    throw new Error("fetch is not available; set channels.telegram.proxy in config");
+    throw new Error(
+      "fetch is not available; set channels.telegram.proxy or OPENCLAW_TELEGRAM_PROXY",
+    );
   }
   return fetchImpl;
+}
+
+export function resolveTelegramProxyUrl(
+  configuredProxyUrl?: string,
+  env: NodeJS.ProcessEnv = process.env,
+): string | undefined {
+  const explicit = configuredProxyUrl?.trim();
+  if (explicit) {
+    return explicit;
+  }
+  for (const key of TELEGRAM_PROXY_ENV_KEYS) {
+    const value = env[key]?.trim();
+    if (value) {
+      return value;
+    }
+  }
+  return undefined;
+}
+
+export function resolveTelegramProxyFetch(
+  configuredProxyUrl?: string,
+  env: NodeJS.ProcessEnv = process.env,
+): typeof fetch | undefined {
+  const proxyUrl = resolveTelegramProxyUrl(configuredProxyUrl, env);
+  if (!proxyUrl) {
+    return undefined;
+  }
+  try {
+    return makeProxyFetch(proxyUrl);
+  } catch {
+    log.warn("telegram: invalid proxy URL; falling back to direct fetch");
+    return undefined;
+  }
 }
 
 export function resetTelegramFetchStateForTests(): void {

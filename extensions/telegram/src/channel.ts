@@ -369,6 +369,8 @@ export const telegramPlugin: ChannelPlugin<ResolvedTelegramAccount, TelegramProb
     defaultRuntime: {
       accountId: DEFAULT_ACCOUNT_ID,
       running: false,
+      connected: false,
+      lastConnectedAt: null,
       lastStartAt: null,
       lastStopAt: null,
       lastError: null,
@@ -378,6 +380,8 @@ export const telegramPlugin: ChannelPlugin<ResolvedTelegramAccount, TelegramProb
       configured: snapshot.configured ?? false,
       tokenSource: snapshot.tokenSource ?? "none",
       running: snapshot.running ?? false,
+      connected: snapshot.connected ?? false,
+      lastConnectedAt: snapshot.lastConnectedAt ?? null,
       mode: snapshot.mode ?? null,
       lastStartAt: snapshot.lastStartAt ?? null,
       lastStopAt: snapshot.lastStopAt ?? null,
@@ -449,6 +453,8 @@ export const telegramPlugin: ChannelPlugin<ResolvedTelegramAccount, TelegramProb
         running: runtime?.running ?? false,
         lastStartAt: runtime?.lastStartAt ?? null,
         lastStopAt: runtime?.lastStopAt ?? null,
+        connected: runtime?.connected ?? false,
+        lastConnectedAt: runtime?.lastConnectedAt ?? null,
         lastError: runtime?.lastError ?? duplicateTokenReason,
         mode: runtime?.mode ?? (account.config.webhookUrl ? "webhook" : "polling"),
         probe,
@@ -475,6 +481,25 @@ export const telegramPlugin: ChannelPlugin<ResolvedTelegramAccount, TelegramProb
         throw new Error(reason);
       }
       const token = account.token.trim();
+      const setTelegramApiErrorStatus = ({
+        err,
+        operation,
+      }: {
+        operation: string;
+        err: unknown;
+      }) => {
+        ctx.setStatus({
+          accountId: ctx.accountId,
+          running: true,
+          connected: false,
+          lastConnectedAt: null,
+          lastError: `${operation}: ${String(err)}`,
+        });
+      };
+      const runtime = {
+        ...ctx.runtime,
+        setTelegramApiErrorStatus,
+      };
       let telegramBotLabel = "";
       try {
         const probe = await getTelegramRuntime().channel.telegram.probeTelegram(
@@ -496,8 +521,9 @@ export const telegramPlugin: ChannelPlugin<ResolvedTelegramAccount, TelegramProb
         token,
         accountId: account.accountId,
         config: ctx.cfg,
-        runtime: ctx.runtime,
+        runtime: runtime,
         abortSignal: ctx.abortSignal,
+        statusSink: (next) => ctx.setStatus({ accountId: ctx.accountId, ...next }),
         useWebhook: Boolean(account.config.webhookUrl),
         webhookUrl: account.config.webhookUrl,
         webhookSecret: account.config.webhookSecret,

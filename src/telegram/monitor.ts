@@ -11,10 +11,16 @@ import { resolveTelegramAccount } from "./accounts.js";
 import { resolveTelegramAllowedUpdates } from "./allowed-updates.js";
 import { withTelegramApiErrorLogging } from "./api-logging.js";
 import { createTelegramBot } from "./bot.js";
+import { resolveTelegramProxyFetch } from "./fetch.js";
 import { isRecoverableTelegramNetworkError } from "./network-errors.js";
-import { makeProxyFetch } from "./proxy.js";
 import { readTelegramUpdateOffset, writeTelegramUpdateOffset } from "./update-offset-store.js";
 import { startTelegramWebhook } from "./webhook.js";
+
+type TelegramConnectionStatus = {
+  connected?: boolean;
+  lastError?: string | null;
+  lastConnectedAt?: string | null;
+};
 
 export type MonitorTelegramOpts = {
   token?: string;
@@ -29,6 +35,7 @@ export type MonitorTelegramOpts = {
   webhookHost?: string;
   proxyFetch?: typeof fetch;
   webhookUrl?: string;
+  statusSink?: (next: TelegramConnectionStatus) => void;
 };
 
 export function createTelegramRunnerOptions(cfg: OpenClawConfig): RunOptions<unknown> {
@@ -118,6 +125,13 @@ export async function monitorTelegramProvider(opts: MonitorTelegramOpts = {}) {
   });
 
   try {
+    const setStatus = (next: TelegramConnectionStatus) => {
+      if (!opts.statusSink) {
+        return;
+      }
+      opts.statusSink(next);
+    };
+    setStatus({ connected: false, lastError: null, lastConnectedAt: null });
     const cfg = opts.config ?? loadConfig();
     const account = resolveTelegramAccount({
       cfg,
@@ -130,8 +144,7 @@ export async function monitorTelegramProvider(opts: MonitorTelegramOpts = {}) {
       );
     }
 
-    const proxyFetch =
-      opts.proxyFetch ?? (account.config.proxy ? makeProxyFetch(account.config.proxy) : undefined);
+    const proxyFetch = opts.proxyFetch ?? resolveTelegramProxyFetch(account.config.proxy);
 
     let lastUpdateId = await readTelegramUpdateOffset({
       accountId: account.accountId,
@@ -154,6 +167,7 @@ export async function monitorTelegramProvider(opts: MonitorTelegramOpts = {}) {
     };
 
     if (opts.useWebhook) {
+      setStatus({ connected: false, lastError: null, lastConnectedAt: null });
       await startTelegramWebhook({
         token,
         accountId: account.accountId,
@@ -163,6 +177,7 @@ export async function monitorTelegramProvider(opts: MonitorTelegramOpts = {}) {
         secret: opts.webhookSecret ?? account.config.webhookSecret,
         host: opts.webhookHost ?? account.config.webhookHost,
         runtime: opts.runtime as RuntimeEnv,
+        statusSink: (next) => setStatus(next),
         fetch: proxyFetch,
         abortSignal: opts.abortSignal,
         publicUrl: opts.webhookUrl,
@@ -264,9 +279,18 @@ export async function monitorTelegramProvider(opts: MonitorTelegramOpts = {}) {
       };
       opts.abortSignal?.addEventListener("abort", stopOnAbort, { once: true });
       try {
+        setStatus({
+          connected: true,
+          lastConnectedAt: new Date().toISOString(),
+          lastError: null,
+        });
         // runner.task() returns a promise that resolves when the runner stops
         await runner.task();
         if (!forceRestarted) {
+          setStatus({
+            connected: false,
+            lastError: null,
+          });
           return;
         }
         forceRestarted = false;
@@ -287,10 +311,14 @@ export async function monitorTelegramProvider(opts: MonitorTelegramOpts = {}) {
         if (!isConflict && !isRecoverable) {
           throw err;
         }
-        restartAttempts += 1;
-        const delayMs = computeBackoff(TELEGRAM_POLL_RESTART_POLICY, restartAttempts);
         const reason = isConflict ? "getUpdates conflict" : "network error";
         const errMsg = formatErrorMessage(err);
+        setStatus({
+          connected: false,
+          lastError: `${reason}: ${errMsg}`,
+        });
+        restartAttempts += 1;
+        const delayMs = computeBackoff(TELEGRAM_POLL_RESTART_POLICY, restartAttempts);
         (opts.runtime?.error ?? console.error)(
           `Telegram ${reason}: ${errMsg}; retrying in ${formatDurationPrecise(delayMs)}.`,
         );

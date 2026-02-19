@@ -13,12 +13,9 @@ const { loadConfig } = vi.hoisted(() => ({
   loadConfig: vi.fn(() => ({})),
 }));
 
-const { makeProxyFetch } = vi.hoisted(() => ({
-  makeProxyFetch: vi.fn(),
-}));
-
-const { resolveTelegramFetch } = vi.hoisted(() => ({
+const { resolveTelegramFetch, resolveTelegramProxyFetch } = vi.hoisted(() => ({
   resolveTelegramFetch: vi.fn(),
+  resolveTelegramProxyFetch: vi.fn(),
 }));
 
 vi.mock("../config/config.js", async (importOriginal) => {
@@ -29,12 +26,9 @@ vi.mock("../config/config.js", async (importOriginal) => {
   };
 });
 
-vi.mock("./proxy.js", () => ({
-  makeProxyFetch,
-}));
-
 vi.mock("./fetch.js", () => ({
   resolveTelegramFetch,
+  resolveTelegramProxyFetch,
 }));
 
 vi.mock("grammy", () => ({
@@ -59,13 +53,13 @@ describe("telegram proxy client", () => {
   const prepareProxyFetch = () => {
     const proxyFetch = vi.fn();
     const fetchImpl = vi.fn();
-    makeProxyFetch.mockReturnValue(proxyFetch as unknown as typeof fetch);
+    resolveTelegramProxyFetch.mockReturnValue(proxyFetch as unknown as typeof fetch);
     resolveTelegramFetch.mockReturnValue(fetchImpl as unknown as typeof fetch);
     return { proxyFetch, fetchImpl };
   };
 
   const expectProxyClient = (fetchImpl: ReturnType<typeof vi.fn>) => {
-    expect(makeProxyFetch).toHaveBeenCalledWith(proxyUrl);
+    expect(resolveTelegramProxyFetch).toHaveBeenCalledWith(proxyUrl);
     expect(resolveTelegramFetch).toHaveBeenCalledWith(expect.any(Function), { network: undefined });
     expect(botCtorSpy).toHaveBeenCalledWith(
       "tok",
@@ -83,8 +77,8 @@ describe("telegram proxy client", () => {
     loadConfig.mockReturnValue({
       channels: { telegram: { accounts: { foo: { proxy: proxyUrl } } } },
     });
-    makeProxyFetch.mockClear();
-    resolveTelegramFetch.mockClear();
+    resolveTelegramProxyFetch.mockReset();
+    resolveTelegramFetch.mockReset();
   });
 
   it.each([
