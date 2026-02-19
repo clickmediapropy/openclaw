@@ -20,6 +20,11 @@ import { createTelegramBot } from "./bot.js";
 const TELEGRAM_WEBHOOK_MAX_BODY_BYTES = 1024 * 1024;
 const TELEGRAM_WEBHOOK_BODY_TIMEOUT_MS = 30_000;
 const TELEGRAM_WEBHOOK_CALLBACK_TIMEOUT_MS = 10_000;
+type TelegramWebhookConnectionStatus = {
+  connected?: boolean;
+  lastError?: string | null;
+  lastConnectedAt?: string | null;
+};
 
 export async function startTelegramWebhook(opts: {
   token: string;
@@ -34,6 +39,7 @@ export async function startTelegramWebhook(opts: {
   abortSignal?: AbortSignal;
   healthPath?: string;
   publicUrl?: string;
+  statusSink?: (next: TelegramWebhookConnectionStatus) => void;
 }) {
   const path = opts.path ?? "/telegram-webhook";
   const healthPath = opts.healthPath ?? "/healthz";
@@ -47,6 +53,10 @@ export async function startTelegramWebhook(opts: {
     );
   }
   const runtime = opts.runtime ?? defaultRuntime;
+  const setStatus = (next: TelegramWebhookConnectionStatus) => {
+    opts.statusSink?.(next);
+  };
+  setStatus({ connected: false, lastError: null, lastConnectedAt: null });
   const diagnosticsEnabled = isDiagnosticsEnabled(opts.config);
   const bot = createTelegramBot({
     token: opts.token,
@@ -129,20 +139,27 @@ export async function startTelegramWebhook(opts: {
   const publicUrl =
     opts.publicUrl ?? `http://${host === "0.0.0.0" ? "localhost" : host}:${port}${path}`;
 
-  await withTelegramApiErrorLogging({
-    operation: "setWebhook",
-    runtime,
-    fn: () =>
-      bot.api.setWebhook(publicUrl, {
-        secret_token: secret,
-        allowed_updates: resolveTelegramAllowedUpdates(),
-      }),
-  });
+  try {
+    await withTelegramApiErrorLogging({
+      operation: "setWebhook",
+      runtime,
+      fn: () =>
+        bot.api.setWebhook(publicUrl, {
+          secret_token: secret,
+          allowed_updates: resolveTelegramAllowedUpdates(),
+        }),
+    });
+    setStatus({ connected: true, lastConnectedAt: new Date().toISOString(), lastError: null });
+  } catch (err) {
+    setStatus({ connected: false, lastError: formatErrorMessage(err), lastConnectedAt: null });
+    throw err;
+  }
 
   await new Promise<void>((resolve) => server.listen(port, host, resolve));
   runtime.log?.(`webhook listening on ${publicUrl}`);
 
   const shutdown = () => {
+    setStatus({ connected: false, lastError: null, lastConnectedAt: null });
     server.close();
     void bot.stop();
     if (diagnosticsEnabled) {

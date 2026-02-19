@@ -4,6 +4,11 @@ import { createSubsystemLogger } from "../logging/subsystem.js";
 import type { RuntimeEnv } from "../runtime.js";
 
 export type TelegramApiLogger = (message: string) => void;
+type TelegramApiErrorStatusHandler = (args: {
+  operation: string;
+  err: unknown;
+  accountId?: string;
+}) => void;
 
 type TelegramApiLoggingParams<T> = {
   operation: string;
@@ -14,6 +19,7 @@ type TelegramApiLoggingParams<T> = {
 };
 
 const fallbackLogger = createSubsystemLogger("telegram/api");
+const REPORT_STATUS_CALLBACK = "setTelegramApiErrorStatus" as const;
 
 function resolveTelegramApiLogger(runtime?: RuntimeEnv, logger?: TelegramApiLogger) {
   if (logger) {
@@ -23,6 +29,14 @@ function resolveTelegramApiLogger(runtime?: RuntimeEnv, logger?: TelegramApiLogg
     return runtime.error;
   }
   return (message: string) => fallbackLogger.error(message);
+}
+
+function resolveTelegramApiErrorStatus(
+  runtime?: RuntimeEnv &
+    Partial<Record<typeof REPORT_STATUS_CALLBACK, TelegramApiErrorStatusHandler>>,
+): TelegramApiErrorStatusHandler | undefined {
+  const handler = runtime?.[REPORT_STATUS_CALLBACK];
+  return typeof handler === "function" ? handler : undefined;
 }
 
 export async function withTelegramApiErrorLogging<T>({
@@ -35,6 +49,7 @@ export async function withTelegramApiErrorLogging<T>({
   try {
     return await fn();
   } catch (err) {
+    resolveTelegramApiErrorStatus(runtime)?.({ operation, err });
     if (!shouldLog || shouldLog(err)) {
       const errText = formatErrorMessage(err);
       const log = resolveTelegramApiLogger(runtime, logger);

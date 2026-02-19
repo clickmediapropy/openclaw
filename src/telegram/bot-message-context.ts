@@ -37,6 +37,7 @@ import { buildPairingReply } from "../pairing/pairing-messages.js";
 import { upsertChannelPairingRequest } from "../pairing/pairing-store.js";
 import { resolveAgentRoute } from "../routing/resolve-route.js";
 import { resolveThreadSessionKeys } from "../routing/session-key.js";
+import type { RuntimeEnv } from "../runtime.js";
 import { withTelegramApiErrorLogging } from "./api-logging.js";
 import {
   firstDefined,
@@ -103,6 +104,7 @@ export type BuildTelegramMessageContextParams = {
   historyLimit: number;
   groupHistories: Map<string, HistoryEntry[]>;
   dmPolicy: DmPolicy;
+  runtime?: RuntimeEnv;
   allowFrom?: Array<string | number>;
   groupAllowFrom?: Array<string | number>;
   ackReactionScope: "off" | "group-mentions" | "group-all" | "direct" | "all";
@@ -143,6 +145,7 @@ export const buildTelegramMessageContext = async ({
   historyLimit,
   groupHistories,
   dmPolicy,
+  runtime,
   allowFrom,
   groupAllowFrom,
   ackReactionScope,
@@ -244,6 +247,7 @@ export const buildTelegramMessageContext = async ({
   const sendTyping = async () => {
     await withTelegramApiErrorLogging({
       operation: "sendChatAction",
+      runtime,
       fn: () => bot.api.sendChatAction(chatId, "typing", buildTypingThreadParams(replyThreadId)),
     });
   };
@@ -252,6 +256,7 @@ export const buildTelegramMessageContext = async ({
     try {
       await withTelegramApiErrorLogging({
         operation: "sendChatAction",
+        runtime,
         fn: () =>
           bot.api.sendChatAction(chatId, "record_voice", buildTypingThreadParams(replyThreadId)),
       });
@@ -317,6 +322,7 @@ export const buildTelegramMessageContext = async ({
               );
               await withTelegramApiErrorLogging({
                 operation: "sendMessage",
+                runtime,
                 fn: () =>
                   bot.api.sendMessage(
                     chatId,
@@ -562,6 +568,7 @@ export const buildTelegramMessageContext = async ({
     : shouldAckReaction() && msg.message_id && reactionApi
       ? withTelegramApiErrorLogging({
           operation: "setMessageReaction",
+          runtime,
           fn: () => reactionApi(chatId, msg.message_id, [{ type: "emoji", emoji: ackReaction }]),
         }).then(
           () => true,
