@@ -10,6 +10,7 @@ import {
 } from "@mariozechner/pi-tui";
 import { resolveDefaultAgentId } from "../agents/agent-scope.js";
 import { loadConfig } from "../config/config.js";
+import type { OpenClawConfig } from "../config/types.js";
 import {
   buildAgentMainSessionKey,
   normalizeAgentId,
@@ -881,6 +882,33 @@ export async function runTui(opts: TuiOptions) {
     wasDisconnected = false;
     setConnectionStatus("connected");
     void (async () => {
+      // Load upstream config from gateway to pick up recent changes
+      try {
+        const upstreamConfigSnapshot = await client.getConfig();
+        if (
+          upstreamConfigSnapshot &&
+          typeof upstreamConfigSnapshot === "object" &&
+          "config" in upstreamConfigSnapshot
+        ) {
+          const upstreamConfig = (upstreamConfigSnapshot as { config: unknown })
+            .config as OpenClawConfig;
+          // Update session scope and main key from upstream config
+          if (upstreamConfig.session?.scope) {
+            sessionScope = upstreamConfig.session.scope as SessionScope;
+          }
+          if (upstreamConfig.session?.mainKey) {
+            sessionMainKey = normalizeMainKey(upstreamConfig.session.mainKey);
+          }
+          // Update default agent ID from upstream config
+          const newDefaultAgentId = resolveDefaultAgentId(upstreamConfig);
+          if (newDefaultAgentId && newDefaultAgentId !== agentDefaultId) {
+            agentDefaultId = newDefaultAgentId;
+            currentAgentId = newDefaultAgentId;
+          }
+        }
+      } catch {
+        // Silently fail if config retrieval fails; fall back to local config
+      }
       await refreshAgents();
       updateHeader();
       await loadHistory();

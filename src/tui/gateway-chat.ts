@@ -228,6 +228,10 @@ export class GatewayChatClient {
     const res = await this.client.request<{ models?: GatewayModelChoice[] }>("models.list");
     return Array.isArray(res?.models) ? res.models : [];
   }
+
+  async getConfig(): Promise<unknown> {
+    return await this.client.request("config.get", {});
+  }
 }
 
 export function resolveGatewayConnection(opts: GatewayConnectionOptions) {
