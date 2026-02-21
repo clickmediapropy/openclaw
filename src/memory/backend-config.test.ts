@@ -143,4 +143,38 @@ describe("resolveMemoryBackendConfig", () => {
     const resolved = resolveMemoryBackendConfig({ cfg, agentId: "main" });
     expect(resolved.qmd?.searchMode).toBe("vsearch");
   });
+
+  it("uses per-agent memoryBackend override when set", () => {
+    const cfg = {
+      agents: {
+        defaults: { workspace: "/tmp/memory-test" },
+        list: [{ id: "agent-convex", memoryBackend: "convex" }, { id: "agent-default" }],
+      },
+    } as OpenClawConfig;
+
+    const convexResolved = resolveMemoryBackendConfig({ cfg, agentId: "agent-convex" });
+    expect(convexResolved.backend).toBe("convex");
+
+    const defaultResolved = resolveMemoryBackendConfig({ cfg, agentId: "agent-default" });
+    expect(defaultResolved.backend).toBe("builtin");
+  });
+
+  it("per-agent memoryBackend takes priority over global memory.backend", () => {
+    const cfg = {
+      agents: {
+        defaults: { workspace: "/tmp/memory-test" },
+        list: [{ id: "special-agent", memoryBackend: "builtin" }],
+      },
+      memory: {
+        backend: "convex",
+        convex: { url: "https://test.convex.cloud" },
+      },
+    } as OpenClawConfig;
+
+    const specialResolved = resolveMemoryBackendConfig({ cfg, agentId: "special-agent" });
+    expect(specialResolved.backend).toBe("builtin");
+
+    const otherResolved = resolveMemoryBackendConfig({ cfg, agentId: "other-agent" });
+    expect(otherResolved.backend).toBe("convex");
+  });
 });
