@@ -10,6 +10,7 @@ import type {
 
 const log = createSubsystemLogger("memory");
 const QMD_MANAGER_CACHE = new Map<string, MemorySearchManager>();
+const CONVEX_MANAGER_CACHE = new Map<string, MemorySearchManager>();
 
 export type MemorySearchManagerResult = {
   manager: MemorySearchManager | null;
@@ -22,6 +23,38 @@ export async function getMemorySearchManager(params: {
   purpose?: "default" | "status";
 }): Promise<MemorySearchManagerResult> {
   const resolved = resolveMemoryBackendConfig(params);
+  if (resolved.backend === "convex" && resolved.convex) {
+    const cacheKey = `convex:${params.agentId}`;
+    const cached = CONVEX_MANAGER_CACHE.get(cacheKey);
+    if (cached) {
+      return { manager: cached };
+    }
+    try {
+      const { ConvexMemoryBackend } = await import("./convex-manager.js");
+      const { resolveAgentWorkspaceDir } = await import("../agents/agent-scope.js");
+      const workspaceDir = resolveAgentWorkspaceDir(params.cfg, params.agentId);
+      const primary = new ConvexMemoryBackend({
+        convexUrl: resolved.convex.url,
+        agentId: params.agentId,
+        workspaceDir,
+      });
+      const wrapper = new FallbackMemoryManager(
+        {
+          primary,
+          fallbackFactory: async () => {
+            const { MemoryIndexManager } = await import("./manager.js");
+            return await MemoryIndexManager.get(params);
+          },
+        },
+        () => CONVEX_MANAGER_CACHE.delete(cacheKey),
+      );
+      CONVEX_MANAGER_CACHE.set(cacheKey, wrapper);
+      return { manager: wrapper };
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      log.warn(`convex memory unavailable; falling back to builtin: ${message}`);
+    }
+  }
   if (resolved.backend === "qmd" && resolved.qmd) {
     const statusOnly = params.purpose === "status";
     const cacheKey = buildQmdCacheKey(params.agentId, resolved.qmd);

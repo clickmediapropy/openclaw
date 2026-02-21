@@ -14,10 +14,15 @@ import type {
 import { resolveUserPath } from "../utils.js";
 import { splitShellArgs } from "../utils/shell-argv.js";
 
+export type ResolvedConvexConfig = {
+  url: string;
+};
+
 export type ResolvedMemoryBackendConfig = {
   backend: MemoryBackend;
   citations: MemoryCitationsMode;
   qmd?: ResolvedQmdConfig;
+  convex?: ResolvedConvexConfig;
 };
 
 export type ResolvedQmdCollection = {
@@ -300,6 +305,11 @@ export function resolveMemoryBackendConfig(params: {
 }): ResolvedMemoryBackendConfig {
   const backend = params.cfg.memory?.backend ?? DEFAULT_BACKEND;
   const citations = params.cfg.memory?.citations ?? DEFAULT_CITATIONS;
+  if (backend === "convex") {
+    const convexCfg = params.cfg.memory?.convex;
+    const url = convexCfg?.url || process.env.CONVEX_URL || "http://127.0.0.1:3210";
+    return { backend: "convex", citations, convex: { url } };
+  }
   if (backend !== "qmd") {
     return { backend: "builtin", citations };
   }
